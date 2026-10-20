@@ -19,12 +19,11 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            justify-content: space-between;
         }
 
         header {
             width: 100%;
-            max-width: 360px;
+            max-width: 350px;
         }
 
         h1 {
@@ -32,7 +31,7 @@
             font-weight: 700;
             letter-spacing: 0.5px;
             color: #38bdf8;
-            margin: 0 0 4px 0;
+            margin: 0 0 8px 0;
         }
 
         .top-bar {
@@ -47,7 +46,7 @@
             font-weight: 600;
             color: #94a3b8;
             background: #1e293b;
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 8px;
         }
 
@@ -55,32 +54,31 @@
             background-color: #334155;
             color: #f8fafc;
             border: none;
-            padding: 6px 12px;
+            padding: 6px 14px;
             border-radius: 8px;
             font-weight: 600;
             font-size: 12px;
             cursor: pointer;
-            transition: background 0.2s;
         }
-        .btn-rules:active { background-color: #475569; }
 
-        /* Renk Takip Alanı */
         .color-tracker {
             display: flex;
             justify-content: center;
             gap: 6px;
             margin-bottom: 12px;
-            max-width: 360px;
-            flex-wrap: wrap;
+            width: 100%;
+            max-width: 350px;
             background: #1e293b;
             padding: 8px;
             border-radius: 12px;
+            min-height: 32px;
+            flex-wrap: wrap;
         }
         .color-badge {
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            opacity: 0.25;
+            opacity: 0.3;
             border: 2px solid rgba(255,255,255,0.2);
             transition: all 0.3s ease;
         }
@@ -91,26 +89,26 @@
             box-shadow: 0 0 8px rgba(255,255,255,0.5);
         }
 
-        /* Oyun Tahtası Kartı */
         #game-container {
             position: relative;
-            width: 350px;
-            height: 350px;
+            width: 340px;
+            height: 340px;
             background: #1e293b;
             border-radius: 20px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
             border: 1px solid #334155;
+            overflow: hidden;
         }
         svg {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            pointer-events: none;
+            z-index: 1;
         }
         .node {
             position: absolute;
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: #0f111a;
             border: 2px solid #475569;
@@ -118,14 +116,13 @@
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             color: #cbd5e1;
             cursor: pointer;
             transform: translate(-50%, -50%);
             z-index: 10;
-            transition: transform 0.15s, background-color 0.2s, border-color 0.2s;
+            transition: transform 0.15s, background-color 0.2s;
         }
-        .node:active { transform: translate(-50%, -50%) scale(0.9); }
         .node.active {
             background-color: #38bdf8 !important;
             border-color: #fff !important;
@@ -138,12 +135,11 @@
         .node.visited { background-color: #334155; border-color: #64748b; color: #94a3b8; }
 
         footer {
-            margin-top: 12px;
-            font-size: 12px;
+            margin-top: 15px;
+            font-size: 13px;
             color: #64748b;
         }
 
-        /* Modal / Kural Penceresi */
         .modal {
             display: none;
             position: fixed;
@@ -164,7 +160,6 @@
             border-radius: 16px;
             text-align: left;
             border: 1px solid #334155;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
         }
         .modal-content h2 { margin-top: 0; color: #38bdf8; font-size: 16px; }
         .modal-content ul { padding-left: 18px; font-size: 13px; line-height: 1.5; color: #cbd5e1; }
@@ -200,19 +195,116 @@
         Adım: <span id="step-count">0</span>
     </footer>
 
-    <!-- Kural Modalı -->
     <div id="rulesModal" class="modal">
         <div class="modal-content">
             <h2>Oyun Kuralları</h2>
             <ul>
                 <li><b>Amaç:</b> 1 numaralı düğümden başlayıp 25 numaralı bitişe ulaşmak.</li>
-                <li><b>Renk Kuralı:</b> Her renkten yalnızca <b>bir kez</b> geçebilirsin. Kullanılan renk kapanır.</li>
+                <li><b>Renk Kuralı:</b> Her renkten yalnızca <b>bir kez</b> geçebilirsin.</li>
                 <li><b>Seviye Sistemi:</b> İlerledikçe renk çeşitliliği ve zorluk artar.</li>
-                <li><b>Kaybetme:</b> Çıkmaz yola girer ve hamlesiz kalırsan <b>Level 1'e dönersin!</b></li>
+                <li><b>Kaybetme:</b> Çıkmaz yola girersen <b>Level 1'e dönersin!</b></li>
             </ul>
             <button class="close-btn" onclick="closeRules()">Anladım</button>
         </div>
     </div>
 
     <script>
-        const nodesPos = [];
+        const nodesPos = {};
+        const container = document.getElementById('game-container');
+        const svg = document.getElementById('svg-edges');
+        
+        const spacing = 340 / 6;
+        for (let row = 0; row < 5; row++) {
+            for (let col = 0; col < 5; col++) {
+                const id = (4 - row) * 5 + col + 1;
+                nodesPos[id] = { x: (col + 1) * spacing, y: (row + 1) * spacing };
+            }
+        }
+
+        const baseEdges = [
+            { f: 1, t: 2 }, { f: 1, t: 6 }, { f: 6, t: 7 }, { f: 11, t: 16 }, { f: 24, t: 25 },
+            { f: 6, t: 11 }, { f: 7, t: 11 }, { f: 7, t: 12 }, { f: 7, t: 8 }, { f: 21, t: 22 }, { f: 22, t: 23 },
+            { f: 3, t: 8 }, { f: 11, t: 12 }, { f: 12, t: 13 }, { f: 13, t: 14 }, { f: 17, t: 18 },
+            { f: 4, t: 9 }, { f: 9, t: 14 }, { f: 13, t: 18 }, { f: 18, t: 14 }, { f: 18, t: 19 },
+            { f: 5, t: 10 }, { f: 10, t: 15 }, { f: 19, t: 20 }, { f: 19, t: 24 },
+            { f: 2, t: 3 }, { f: 15, t: 20 }, { f: 20, t: 25 }, { f: 23, t: 24 }
+        ];
+
+        let currentLevel = 1;
+        let currentPos = 1;
+        let visitedNodes = [1];
+        let usedColors = [];
+        let steps = 0;
+        let levelColors = [];
+        let levelEdges = [];
+
+        function initLevelData() {
+            const colorCount = Math.min(20, 3 + Math.floor((currentLevel - 1) * 0.35));
+            levelColors = [];
+            for (let i = 0; i < colorCount; i++) {
+                const hue = Math.floor(i * (360 / colorCount));
+                levelColors.push({ id: i, hex: `hsl(${hue}, 85%, 60%)` });
+            }
+
+            levelEdges = baseEdges.map((e, index) => {
+                const colorIndex = index % levelColors.length;
+                return { f: e.f, t: e.t, colorId: levelColors[colorIndex].id, hex: levelColors[colorIndex].hex };
+            });
+        }
+
+        function renderMap() {
+            initLevelData();
+            svg.innerHTML = '';
+            
+            // Eski node'ları temizle
+            const oldNodes = container.querySelectorAll('.node');
+            oldNodes.forEach(n => n.remove());
+
+            const tracker = document.getElementById('colorTracker');
+            tracker.innerHTML = '';
+            levelColors.forEach(c => {
+                const badge = document.createElement('div');
+                badge.className = 'color-badge';
+                badge.style.backgroundColor = c.hex;
+                if (usedColors.includes(c.id)) badge.classList.add('used');
+                tracker.appendChild(badge);
+            });
+
+            document.getElementById('level-info').innerText = `Seviye ${currentLevel}`;
+
+            // Çizgileri ekle
+            levelEdges.forEach(e => {
+                const p1 = nodesPos[e.f];
+                const p2 = nodesPos[e.t];
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+                line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+                line.setAttribute('stroke', e.hex);
+                line.setAttribute('stroke-width', '4');
+                line.setAttribute('stroke-linecap', 'round');
+                svg.appendChild(line);
+            });
+
+            // Düğümleri ekle
+            for (let i = 1; i <= 25; i++) {
+                const node = document.createElement('div');
+                node.className = 'node';
+                if (i === 1) node.classList.add('start-node');
+                if (i === 25) node.classList.add('finish-node');
+                if (i === currentPos) node.classList.add('active');
+                else if (visitedNodes.includes(i)) node.classList.add('visited');
+
+                node.innerText = i;
+                node.style.left = `${nodesPos[i].x}px`;
+                node.style.top = `${nodesPos[i].y}px`;
+                node.onclick = () => moveToNode(i);
+                container.appendChild(node);
+            }
+
+            checkGameOver();
+        }
+
+        function moveToNode(targetId) {
+            if (currentPos === targetId) return;
+
+            
