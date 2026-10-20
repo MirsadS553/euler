@@ -38,7 +38,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         #level-info {
@@ -61,6 +61,55 @@
             cursor: pointer;
         }
 
+        /* Seviye Baloncuk Barı */
+        .level-bar-container {
+            width: 100%;
+            max-width: 350px;
+            background: #1e293b;
+            padding: 8px 10px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            margin-bottom: 10px;
+            scrollbar-width: none;
+        }
+        .level-bar-container::-webkit-scrollbar { display: none; }
+        
+        .level-bubble {
+            min-width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #38bdf8;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .level-bubble.active {
+            background: #38bdf8;
+            color: #0f111a;
+            border-color: #38bdf8;
+            transform: scale(1.15);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+            font-weight: 700;
+        }
+
+        /* Perk / Yenilik Bildirim Alanı */
+        #level-perk-info {
+            font-size: 11px;
+            font-weight: 600;
+            color: #f59e0b;
+            margin-bottom: 8px;
+            min-height: 16px;
+        }
+
         #game-container {
             position: relative;
             width: 340px;
@@ -79,17 +128,14 @@
         }
         .node {
             position: absolute;
-            width: 34px;
-            height: 34px;
             border-radius: 50%;
             background: #fff8eb;
-            border: 3px solid #8c6d53;
-            box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #8c6d53;
+            border: 2.5px solid #8c6d53;
+            box-shadow: inset 0 0 0 1.5px #fff, 0 0 0 1.5px #8c6d53;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 12px;
             color: #4a3525;
             cursor: pointer;
             transform: translate(-50%, -50%);
@@ -167,6 +213,9 @@
             <div id="level-info">Seviye 1</div>
             <button class="btn-rules" onclick="openRules()">Kurallar</button>
         </div>
+        <!-- Seviye Baloncuk Barı -->
+        <div class="level-bar-container" id="levelBar"></div>
+        <div id="level-perk-info"></div>
     </header>
 
     <div id="game-container">
@@ -182,175 +231,23 @@
         <div class="modal-content">
             <h2>Euler Yolu Kuralları</h2>
             <ul>
-                <li><b>Amaç:</b> 1 (Yeşil) düğümünden başlayıp 25 (Kırmızı) düğümüne ulaşmak.</li>
-                <li><b>Tek Kalem Kuralı (Euler):</b> Çizdiğin hiçbir yoldan (kenardan) <b>iki kez geçemezsin!</b> Dilediğin renk hattı üzerinden serbestçe ilerleyebilirsin.</li>
+                <li><b>Amaç:</b> Başlangıç (Yeşil) düğümünden başlayıp Bitiş (Kırmızı) düğümüne ulaşmak.</li>
+                <li><b>Dinamik Izgara:</b> Her 10 levelde alan büyüür (10. Level: 6x6, 20. Level: 7x7).</li>
+                <li><b>Renk Eklenmesi:</b> Her 5 levelde palete yeni renkler eklenir.</li>
+                <li><b>Tek Kalem Kuralı (Euler):</b> Çizdiğin hiçbir yoldan (kenardan) <b>iki kez geçemezsin!</b></li>
                 <li><b>Puanlama:</b> Her geçilen bölüm <b>+10 Puan</b> kazandırır.</li>
-                <li><b>Kaybetme:</b> Çıkmaz yola girersen skorun sıfırlanır ve <b>Level 1'e dönersin!</b></li>
+                <li><b>Kaybetme:</b> Çıkmaz yola girersen skorun sıfırlanır ve **Level 1'e dönersin!**</li>
             </ul>
             <button class="close-btn" onclick="closeRules()">Anladım</button>
         </div>
     </div>
 
     <script>
-        const nodesPos = {};
         const container = document.getElementById('game-container');
         const svg = document.getElementById('svg-edges');
-        
-        const spacing = 340 / 6;
-        for (let row = 0; row < 5; row++) {
-            for (let col = 0; col < 5; col++) {
-                const id = (4 - row) * 5 + col + 1;
-                nodesPos[id] = { x: (col + 1) * spacing, y: (row + 1) * spacing };
-            }
-        }
 
-        const baseEdges = [
-            { f: 1, t: 2, c: 'red' }, { f: 1, t: 6, c: 'red' }, { f: 6, t: 7, c: 'red' }, { f: 11, t: 16, c: 'red' },
-            { f: 6, t: 11, c: 'yellow' }, { f: 7, t: 11, c: 'yellow' }, { f: 7, t: 12, c: 'yellow' }, { f: 7, t: 8, c: 'yellow' },
-            { f: 3, t: 8, c: 'blue' }, { f: 8, t: 13, c: 'blue' }, { f: 11, t: 12, c: 'blue' }, { f: 12, t: 13, c: 'blue' }, { f: 13, t: 14, c: 'blue' }, { f: 17, t: 18, c: 'blue' },
-            { f: 4, t: 9, c: 'green' }, { f: 9, t: 14, c: 'green' }, { f: 14, t: 19, c: 'green' }, { f: 18, t: 19, c: 'green' }, { f: 18, t: 14, c: 'green' },
-            { f: 5, t: 10, c: 'purple' }, { f: 10, t: 15, c: 'purple' }, { f: 19, t: 20, c: 'purple' }, { f: 19, t: 24, c: 'purple' },
-            { f: 21, t: 22, c: 'orange' }, { f: 22, t: 23, c: 'orange' }, { f: 23, t: 24, c: 'orange' }, { f: 24, t: 25, c: 'orange' }, { f: 15, t: 20, c: 'orange' }, { f: 20, t: 25, c: 'orange' }
-        ];
+        const baseColors = ['red', 'yellow', 'blue', 'green', 'purple', 'orange'];
+        const extraColors = ['cyan', 'pink', 'brown', 'lime', 'indigo', 'teal'];
 
         const colorMap = {
-            red: '#f44336', yellow: '#fbc02d', blue: '#2196f3', green: '#4caf50', purple: '#9c27b0', orange: '#ff9800'
-        };
-        const colorKeys = ['red', 'yellow', 'blue', 'green', 'purple', 'orange'];
-
-        let currentLevel = 1;
-        let currentPos = 1;
-        let visitedNodes = [1];
-        let usedEdges = [];
-        let score = 0;
-        let highScore = localStorage.getItem('euler_highscore') || 0;
-        let levelEdges = [];
-
-        document.getElementById('high-score').innerText = highScore;
-
-        function initLevelData() {
-            levelEdges = baseEdges.map((e) => {
-                let colorKey = e.c;
-                if (currentLevel > 1) {
-                    const shift = (currentLevel - 1) % colorKeys.length;
-                    const originalIndex = colorKeys.indexOf(e.c);
-                    colorKey = colorKeys[(originalIndex + shift) % colorKeys.length];
-                }
-                return {
-                    id: `${Math.min(e.f, e.t)}-${Math.max(e.f, e.t)}`,
-                    f: e.f,
-                    t: e.t,
-                    colorKey: colorKey,
-                    hex: colorMap[colorKey]
-                };
-            });
-        }
-
-        function renderMap() {
-            initLevelData();
-            svg.innerHTML = '';
-            
-            const oldNodes = container.querySelectorAll('.node');
-            oldNodes.forEach(n => n.remove());
-
-            document.getElementById('level-info').innerText = `Seviye ${currentLevel}`;
-            document.getElementById('current-score').innerText = score;
-            document.getElementById('high-score').innerText = highScore;
-
-            levelEdges.forEach(e => {
-                const p1 = nodesPos[e.f];
-                const p2 = nodesPos[e.t];
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
-                line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
-                line.setAttribute('stroke', e.hex);
-                line.setAttribute('stroke-width', usedEdges.includes(e.id) ? '2' : '4.5');
-                line.setAttribute('stroke-opacity', usedEdges.includes(e.id) ? '0.3' : '1');
-                line.setAttribute('stroke-linecap', 'round');
-                svg.appendChild(line);
-            });
-
-            for (let i = 1; i <= 25; i++) {
-                const node = document.createElement('div');
-                node.className = 'node';
-                if (i === 1) node.classList.add('start-node');
-                if (i === 25) node.classList.add('finish-node');
-                if (i === currentPos) node.classList.add('active');
-                else if (visitedNodes.includes(i)) node.classList.add('visited');
-
-                node.innerText = i;
-                node.style.left = `${nodesPos[i].x}px`;
-                node.style.top = `${nodesPos[i].y}px`;
-                node.onclick = () => moveToNode(i);
-                container.appendChild(node);
-            }
-
-            checkGameOver();
-        }
-
-        function moveToNode(targetId) {
-            if (currentPos === targetId) return;
-
-            const validEdge = levelEdges.find(e => (e.f === currentPos && e.t === targetId) || (e.f === targetId && e.t === currentPos));
-            
-            if (!validEdge) {
-                alert("Bu yönde doğrudan çizili yol yok!");
-                return;
-            }
-
-            if (usedEdges.includes(validEdge.id)) {
-                alert("Bu yoldan daha önce geçtin! Aynı yoldan tekrar geçemezsin.");
-                return;
-            }
-
-            usedEdges.push(validEdge.id);
-            visitedNodes.push(targetId);
-            currentPos = targetId;
-
-            renderMap();
-
-            if (currentPos === 25) {
-                score += 10;
-                if (score > highScore) {
-                    highScore = score;
-                    localStorage.setItem('euler_highscore', highScore);
-                }
-                setTimeout(() => {
-                    alert(`TEBRİKLER! Seviye ${currentLevel} Tamamlandı! (+10 Puan)`);
-                    currentLevel++;
-                    resetLevelState(false);
-                }, 200);
-            }
-        }
-
-        function checkGameOver() {
-            if (currentPos === 25) return;
-
-            const availableEdges = levelEdges.filter(e => (e.f === currentPos || e.t === currentPos) && !usedEdges.includes(e.id));
-
-            if (availableEdges.length === 0 && currentPos !== 25) {
-                setTimeout(() => {
-                    alert(`Çıkmaz yola girdin! Kaybettin. Skorun sıfırlandı, Level 1'e dönüyorsun.`);
-                    currentLevel = 1;
-                    resetLevelState(true);
-                }, 250);
-            }
-        }
-
-        function resetLevelState(resetScore) {
-            currentPos = 1;
-            visitedNodes = [1];
-            usedEdges = [];
-            if (resetScore) {
-                score = 0;
-            }
-            renderMap();
-        }
-
-        function openRules() { document.getElementById('rulesModal').style.display = 'flex'; }
-        function closeRules() { document.getElementById('rulesModal').style.display = 'none'; }
-
-        renderMap();
-    </script>
-</body>
-</html>
+            red: '#f44
