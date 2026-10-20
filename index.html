@@ -201,7 +201,7 @@
             <ul>
                 <li><b>Amaç:</b> 1 numaralı düğümden başlayıp 25 numaralı bitişe ulaşmak.</li>
                 <li><b>Renk Kuralı:</b> Her renkten yalnızca <b>bir kez</b> geçebilirsin.</li>
-                <li><b>Seviye Sistemi:</b> İlerledikçe renk çeşitliliği ve zorluk artar.</li>
+                <li><b>Seviye Sistemi:</b> 5 renk ile başlar, ilerledikçe çeşitlilik artar.</li>
                 <li><b>Kaybetme:</b> Çıkmaz yola girersen <b>Level 1'e dönersin!</b></li>
             </ul>
             <button class="close-btn" onclick="closeRules()">Anladım</button>
@@ -239,7 +239,8 @@
         let levelEdges = [];
 
         function initLevelData() {
-            const colorCount = Math.min(20, 3 + Math.floor((currentLevel - 1) * 0.35));
+            // Seviye 1'de 5 renk ile başlar, seviye arttıkça pürüzsüz artar
+            const colorCount = Math.min(20, 5 + Math.floor((currentLevel - 1) * 0.3));
             levelColors = [];
             for (let i = 0; i < colorCount; i++) {
                 const hue = Math.floor(i * (360 / colorCount));
@@ -256,7 +257,6 @@
             initLevelData();
             svg.innerHTML = '';
             
-            // Eski node'ları temizle
             const oldNodes = container.querySelectorAll('.node');
             oldNodes.forEach(n => n.remove());
 
@@ -272,7 +272,6 @@
 
             document.getElementById('level-info').innerText = `Seviye ${currentLevel}`;
 
-            // Çizgileri ekle
             levelEdges.forEach(e => {
                 const p1 = nodesPos[e.f];
                 const p2 = nodesPos[e.t];
@@ -285,7 +284,6 @@
                 svg.appendChild(line);
             });
 
-            // Düğümleri ekle
             for (let i = 1; i <= 25; i++) {
                 const node = document.createElement('div');
                 node.className = 'node';
@@ -372,7 +370,6 @@
         function openRules() { document.getElementById('rulesModal').style.display = 'flex'; }
         function closeRules() { document.getElementById('rulesModal').style.display = 'none'; }
 
-        // Oyunu başlat
         renderMap();
     </script>
 </body>
