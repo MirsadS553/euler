@@ -307,4 +307,73 @@
         function moveToNode(targetId) {
             if (currentPos === targetId) return;
 
+            const validEdge = levelEdges.find(e => (e.f === currentPos && e.t === targetId) || (e.f === targetId && e.t === currentPos));
             
+            if (!validEdge) return;
+
+            if (visitedNodes.includes(targetId)) {
+                alert("Aynı düğüme 2 kez uğrayamazsın!");
+                return;
+            }
+
+            if (usedColors.includes(validEdge.colorId)) {
+                alert("Bu rengi zaten kullandın!");
+                return;
+            }
+
+            usedColors.push(validEdge.colorId);
+            visitedNodes.push(targetId);
+            currentPos = targetId;
+            steps++;
+            document.getElementById('step-count').innerText = steps;
+
+            renderMap();
+
+            if (currentPos === 25) {
+                setTimeout(() => {
+                    alert(`Tebrikler! Seviye ${currentLevel} Tamamlandı!`);
+                    currentLevel++;
+                    resetLevelState();
+                }, 200);
+            }
+        }
+
+        function checkGameOver() {
+            if (currentPos === 25) return;
+
+            const availableEdges = levelEdges.filter(e => e.f === currentPos || e.t === currentPos);
+            let hasValidMove = false;
+
+            availableEdges.forEach(e => {
+                const nextNode = e.f === currentPos ? e.t : e.f;
+                const notVisited = !visitedNodes.includes(nextNode);
+                const notUsedColor = !usedColors.includes(e.colorId);
+                if (notVisited && notUsedColor) hasValidMove = true;
+            });
+
+            if (!hasValidMove && visitedNodes.length > 1) {
+                setTimeout(() => {
+                    alert(`Çıkmaz yola girdin! Kaybettin, Level 1'e dönüyorsun.`);
+                    currentLevel = 1;
+                    resetLevelState();
+                }, 250);
+            }
+        }
+
+        function resetLevelState() {
+            currentPos = 1;
+            visitedNodes = [1];
+            usedColors = [];
+            steps = 0;
+            document.getElementById('step-count').innerText = 0;
+            renderMap();
+        }
+
+        function openRules() { document.getElementById('rulesModal').style.display = 'flex'; }
+        function closeRules() { document.getElementById('rulesModal').style.display = 'none'; }
+
+        // Oyunu başlat
+        renderMap();
+    </script>
+</body>
+</html>
