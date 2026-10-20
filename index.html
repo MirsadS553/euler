@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gökkuşağı Rotası</title>
+    <title>Gökkuşağı Rotası - Efsane Seviye</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -27,18 +27,18 @@
         }
 
         h1 {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             letter-spacing: 0.5px;
             color: #38bdf8;
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
         }
 
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         #level-info {
@@ -65,18 +65,18 @@
             display: flex;
             justify-content: center;
             gap: 6px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             width: 100%;
             max-width: 350px;
             background: #1e293b;
             padding: 8px;
             border-radius: 12px;
-            min-height: 32px;
+            min-height: 34px;
             flex-wrap: wrap;
         }
         .color-badge {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             opacity: 0.3;
             border: 2px solid rgba(255,255,255,0.2);
@@ -93,10 +93,10 @@
             position: relative;
             width: 340px;
             height: 340px;
-            background: #1e293b;
+            background: #fdfbf7;
             border-radius: 20px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-            border: 1px solid #334155;
+            border: 2px solid #8c6d53;
             overflow: hidden;
         }
         svg {
@@ -107,37 +107,37 @@
         }
         .node {
             position: absolute;
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            background: #0f111a;
-            border: 2px solid #475569;
+            background: #fff8eb;
+            border: 3px solid #8c6d53;
+            box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #8c6d53;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
+            font-weight: bold;
             font-size: 12px;
-            color: #cbd5e1;
+            color: #4a3525;
             cursor: pointer;
             transform: translate(-50%, -50%);
             z-index: 10;
             transition: transform 0.15s, background-color 0.2s;
         }
         .node.active {
-            background-color: #38bdf8 !important;
-            border-color: #fff !important;
-            color: #0f111a !important;
+            background-color: #ffeb3b !important;
+            border-color: #d97706 !important;
             transform: translate(-50%, -50%) scale(1.15);
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+            box-shadow: 0 0 12px #ffeb3b;
         }
-        .node.start-node { background-color: #10b981; border-color: #34d399; color: #fff; }
-        .node.finish-node { background-color: #f43f5e; border-color: #fb7185; color: #fff; }
-        .node.visited { background-color: #334155; border-color: #64748b; color: #94a3b8; }
+        .node.start-node { background-color: #4CAF50 !important; color: #fff !important; }
+        .node.finish-node { background-color: #F44336 !important; color: #fff !important; }
+        .node.visited { background-color: #b0bec5 !important; color: #333 !important; }
 
         footer {
-            margin-top: 15px;
+            margin-top: 12px;
             font-size: 13px;
-            color: #64748b;
+            color: #94a3b8;
         }
 
         .modal {
@@ -197,12 +197,12 @@
 
     <div id="rulesModal" class="modal">
         <div class="modal-content">
-            <h2>Oyun Kuralları</h2>
+            <h2>Efsane Kurallar</h2>
             <ul>
-                <li><b>Amaç:</b> 1 numaralı düğümden başlayıp 25 numaralı bitişe ulaşmak.</li>
-                <li><b>Renk Kuralı:</b> Her renkten yalnızca <b>bir kez</b> geçebilirsin.</li>
-                <li><b>Seviye Sistemi:</b> 5 renk ile başlar, ilerledikçe çeşitlilik artar.</li>
-                <li><b>Kaybetme:</b> Çıkmaz yola girersen <b>Level 1'e dönersin!</b></li>
+                <li><b>Amaç:</b> 1 (Yeşil) numaralı düğümden başlayıp 25 (Kırmızı) numaralı düğüme ulaşmak[span_2](start_span)[span_2](end_span).</li>
+                <li><b>6 Renk Kuralı:</b> Her renkten yalnızca <b>bir kez</b> geçebilirsin! Tekrarı YOK[span_3](start_span)[span_3](end_span).</li>
+                <li><b>Varyasyon Sistemi:</b> Her yeni seviyede harita yapısı aynı kalır ancak renk rotaları değişerek zorlaşır.</li>
+                <li><b>Kaybetme:</b> Çıkmaz yola girer ve hamlesiz kalırsan <b>Level 1'e dönersin!</b></li>
             </ul>
             <button class="close-btn" onclick="closeRules()">Anladım</button>
         </div>
@@ -221,35 +221,72 @@
             }
         }
 
+        // Gönderdiğin görseldeki (Image 17) birebir orijinal bağlantılar ve temel renkler
         const baseEdges = [
-            { f: 1, t: 2 }, { f: 1, t: 6 }, { f: 6, t: 7 }, { f: 11, t: 16 }, { f: 24, t: 25 },
-            { f: 6, t: 11 }, { f: 7, t: 11 }, { f: 7, t: 12 }, { f: 7, t: 8 }, { f: 21, t: 22 }, { f: 22, t: 23 },
-            { f: 3, t: 8 }, { f: 11, t: 12 }, { f: 12, t: 13 }, { f: 13, t: 14 }, { f: 17, t: 18 },
-            { f: 4, t: 9 }, { f: 9, t: 14 }, { f: 13, t: 18 }, { f: 18, t: 14 }, { f: 18, t: 19 },
-            { f: 5, t: 10 }, { f: 10, t: 15 }, { f: 19, t: 20 }, { f: 19, t: 24 },
-            { f: 2, t: 3 }, { f: 15, t: 20 }, { f: 20, t: 25 }, { f: 23, t: 24 }
+            { f: 1, t: 2, c: 'red' },
+            { f: 1, t: 6, c: 'red' },
+            { f: 6, t: 7, c: 'red' },
+            { f: 11, t: 16, c: 'red' },
+            { f: 6, t: 11, c: 'yellow' },
+            { f: 7, t: 11, c: 'yellow' }, // Çapraz
+            { f: 7, t: 12, c: 'yellow' },
+            { f: 7, t: 8, c: 'yellow' },
+            { f: 3, t: 8, c: 'blue' },
+            { f: 8, t: 13, c: 'blue' },
+            { f: 11, t: 12, c: 'blue' },
+            { f: 12, t: 13, c: 'blue' },
+            { f: 13, t: 14, c: 'blue' },
+            { f: 17, t: 18, c: 'blue' },
+            { f: 4, t: 9, c: 'green' },
+            { f: 9, t: 14, c: 'green' },
+            { f: 14, t: 19, c: 'green' },
+            { f: 18, t: 19, c: 'green' },
+            { f: 18, t: 14, c: 'green' }, // Çapraz
+            { f: 5, t: 10, c: 'purple' },
+            { f: 10, t: 15, c: 'purple' },
+            { f: 19, t: 20, c: 'purple' },
+            { f: 19, t: 24, c: 'purple' },
+            { f: 21, t: 22, c: 'orange' },
+            { f: 22, t: 23, c: 'orange' },
+            { f: 23, t: 24, c: 'orange' },
+            { f: 24, t: 25, c: 'orange' },
+            { f: 15, t: 20, c: 'orange' },
+            { f: 20, t: 25, c: 'orange' }
         ];
+
+        const colorMap = {
+            red: '#f44336',
+            yellow: '#fbc02d',
+            blue: '#2196f3',
+            green: '#4caf50',
+            purple: '#9c27b0',
+            orange: '#ff9800'
+        };
+
+        const colorKeys = ['red', 'yellow', 'blue', 'green', 'purple', 'orange'];
 
         let currentLevel = 1;
         let currentPos = 1;
         let visitedNodes = [1];
         let usedColors = [];
         let steps = 0;
-        let levelColors = [];
         let levelEdges = [];
 
         function initLevelData() {
-            // Seviye 1'de 5 renk ile başlar, seviye arttıkça pürüzsüz artar
-            const colorCount = Math.min(20, 5 + Math.floor((currentLevel - 1) * 0.3));
-            levelColors = [];
-            for (let i = 0; i < colorCount; i++) {
-                const hue = Math.floor(i * (360 / colorCount));
-                levelColors.push({ id: i, hex: `hsl(${hue}, 85%, 60%)` });
-            }
-
+            // Seviye 1 orijinal görselin aynısıdır. Seviye 2 ve sonrasında renkler varyasyon oluşturacak şekilde kaydırılır/karıştırılır.
             levelEdges = baseEdges.map((e, index) => {
-                const colorIndex = index % levelColors.length;
-                return { f: e.f, t: e.t, colorId: levelColors[colorIndex].id, hex: levelColors[colorIndex].hex };
+                let colorKey = e.c;
+                if (currentLevel > 1) {
+                    const shift = (currentLevel - 1) % colorKeys.length;
+                    const originalIndex = colorKeys.indexOf(e.c);
+                    colorKey = colorKeys[(originalIndex + shift) % colorKeys.length];
+                }
+                return {
+                    f: e.f,
+                    t: e.t,
+                    colorKey: colorKey,
+                    hex: colorMap[colorKey]
+                };
             });
         }
 
@@ -262,16 +299,19 @@
 
             const tracker = document.getElementById('colorTracker');
             tracker.innerHTML = '';
-            levelColors.forEach(c => {
+            
+            // O anki seviyedeki renk rozetlerini göster
+            colorKeys.forEach(ck => {
                 const badge = document.createElement('div');
                 badge.className = 'color-badge';
-                badge.style.backgroundColor = c.hex;
-                if (usedColors.includes(c.id)) badge.classList.add('used');
+                badge.style.backgroundColor = colorMap[ck];
+                if (usedColors.includes(ck)) badge.classList.add('used');
                 tracker.appendChild(badge);
             });
 
             document.getElementById('level-info').innerText = `Seviye ${currentLevel}`;
 
+            // Çizgileri çiz
             levelEdges.forEach(e => {
                 const p1 = nodesPos[e.f];
                 const p2 = nodesPos[e.t];
@@ -279,11 +319,12 @@
                 line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
                 line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
                 line.setAttribute('stroke', e.hex);
-                line.setAttribute('stroke-width', '4');
+                line.setAttribute('stroke-width', '4.5');
                 line.setAttribute('stroke-linecap', 'round');
                 svg.appendChild(line);
             });
 
+            // Düğümleri çiz
             for (let i = 1; i <= 25; i++) {
                 const node = document.createElement('div');
                 node.className = 'node';
@@ -307,19 +348,22 @@
 
             const validEdge = levelEdges.find(e => (e.f === currentPos && e.t === targetId) || (e.f === targetId && e.t === currentPos));
             
-            if (!validEdge) return;
+            if (!validEdge) {
+                alert("Bu yönde doğrudan çizili yol yok!");
+                return;
+            }
 
             if (visitedNodes.includes(targetId)) {
                 alert("Aynı düğüme 2 kez uğrayamazsın!");
                 return;
             }
 
-            if (usedColors.includes(validEdge.colorId)) {
-                alert("Bu rengi zaten kullandın!");
+            if (usedColors.includes(validEdge.colorKey)) {
+                alert(`'${validEdge.colorKey.toUpperCase()}' rengini zaten kullandın! Tekrar YOK!`);
                 return;
             }
 
-            usedColors.push(validEdge.colorId);
+            usedColors.push(validEdge.colorKey);
             visitedNodes.push(targetId);
             currentPos = targetId;
             steps++;
@@ -329,7 +373,7 @@
 
             if (currentPos === 25) {
                 setTimeout(() => {
-                    alert(`Tebrikler! Seviye ${currentLevel} Tamamlandı!`);
+                    alert(`TEBRİKLER! Seviye ${currentLevel} Efsane Gibi Tamamlandı! Sonraki varyasyona geçiliyor.`);
                     currentLevel++;
                     resetLevelState();
                 }, 200);
@@ -345,7 +389,7 @@
             availableEdges.forEach(e => {
                 const nextNode = e.f === currentPos ? e.t : e.f;
                 const notVisited = !visitedNodes.includes(nextNode);
-                const notUsedColor = !usedColors.includes(e.colorId);
+                const notUsedColor = !usedColors.includes(e.colorKey);
                 if (notVisited && notUsedColor) hasValidMove = true;
             });
 
